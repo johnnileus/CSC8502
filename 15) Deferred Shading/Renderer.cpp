@@ -10,15 +10,8 @@ Renderer::Renderer(Window& parent) : OGLRenderer(parent) {
     quad = Mesh::GenerateQuad();
     heightMap = new HeightMap(TEXTUREDIR "noise.png");
 
-    earthTex = SOIL_load_OGL_texture(
-        TEXTUREDIR "Barren Reds.JPG", SOIL_LOAD_AUTO,
-        SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS
-    );
-
-    earthBump = SOIL_load_OGL_texture(
-        TEXTUREDIR "Barren RedsDOT3.JPG", SOIL_LOAD_AUTO,
-        SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS
-    );
+    earthTex = SOIL_load_OGL_texture(TEXTUREDIR "Barren Reds.JPG", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS);
+    earthBump = SOIL_load_OGL_texture(TEXTUREDIR "Barren RedsDOT3.JPG", SOIL_LOAD_AUTO,SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS);
 
     SetTextureRepeating(earthTex, true);
     SetTextureRepeating(earthBump, true);

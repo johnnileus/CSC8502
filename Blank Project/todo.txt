@@ -1,0 +1,19 @@
+Features complete:
+ - Core Features:
+  x Landscape
+  x Lit by light source
+  - Environment mapping (water)
+  - Automatic Camera movement
+  - Scene Graph
+  - Simple meshes combined into additional scene elements
+ - Advanced Features:
+  - Post processing effects
+  - Advanced lighing, e.g. spotlights, projective lighting, large # of lights
+  - Real time shadows
+  - Multiple viewpoints
+  - Animated objects
+  - Environmental effects, e.g. rain, atmosphere, lightning, fire
+
+Features to do:
+ - Portal
+ - Lens flare/bloom
