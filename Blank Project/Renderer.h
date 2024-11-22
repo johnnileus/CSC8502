@@ -13,15 +13,21 @@ public:
     void RenderScene() override;
     void UpdateScene(float dt) override;
 
+
 protected:
     void FillBuffers();             // G-Buffer Fill Render Pass
     void DrawPointLights();         // Lighting Render Pass
     void CombineBuffers();          // Combination Render Pass
     void GenerateScreenTexture(GLuint& into, bool depth = false);
+    void DrawSkybox();
 
     Shader* sceneShader;            // Shader to fill our G-Buffers
     Shader* pointlightShader;       // Shader to calculate lighting
     Shader* combineShader;          // Shader to stick it all together
+
+    Shader* lightShader;
+    Shader* reflectShader;
+    Shader* skyboxShader;
 
     GLuint bufferFBO;               // FBO for our G-Buffer pass
     GLuint bufferColourTex;         // Albedo goes here
@@ -35,8 +41,15 @@ protected:
     HeightMap* heightMap;           // Terrain
     Light* pointLights;             // Array of lighting data
     Mesh* sphere;                   // Light volume
-    Mesh* quad;                     // To draw a full-screen quad
+    Mesh* terrainQuad;                     // To draw a full-screen quad
+    Mesh* skyboxQuad;
     Camera* camera;                 // Our usual camera
+  
     GLuint earthTex;                // Texture for the terrain
     GLuint earthBump;               // Bump map for the terrain
+    GLuint waterTex;
+    GLuint skybox;
+
+    float waterRotate;
+    float waterCycle;
 };

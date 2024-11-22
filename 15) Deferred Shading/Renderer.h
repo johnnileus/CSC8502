@@ -35,7 +35,7 @@ protected:
     HeightMap* heightMap;           // Terrain
     Light* pointLights;             // Array of lighting data
     Mesh* sphere;                   // Light volume
-    Mesh* quad;                     // To draw a full-screen quad
+    Mesh* terrainQuad;                     // To draw a full-screen quad
     Camera* camera;                 // Our usual camera
     GLuint earthTex;                // Texture for the terrain
     GLuint earthBump;               // Bump map for the terrain

@@ -7,7 +7,7 @@ const int LIGHT_NUM = 100;
 
 Renderer::Renderer(Window& parent) : OGLRenderer(parent) {
     sphere = Mesh::LoadFromMeshFile("Sphere.msh");
-    quad = Mesh::GenerateQuad();
+    terrainQuad = Mesh::GenerateQuad();
     heightMap = new HeightMap(TEXTUREDIR "noise.png");
 
     earthTex = SOIL_load_OGL_texture(TEXTUREDIR "Barren Reds.JPG", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS);
@@ -102,7 +102,7 @@ Renderer::~Renderer(void) {
     delete heightMap;
     delete camera;
     delete sphere;
-    delete quad;
+    delete terrainQuad;
     delete[] pointLights;
 
     glDeleteTextures(1, &bufferColourTex);
@@ -229,5 +229,5 @@ void Renderer::CombineBuffers() {
     glActiveTexture(GL_TEXTURE2);
     glBindTexture(GL_TEXTURE_2D, lightSpecularTex);
 
-    quad->Draw();
+    terrainQuad->Draw();
 }

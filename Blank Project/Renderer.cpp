@@ -7,8 +7,10 @@ const int LIGHT_NUM = 100;
 
 Renderer::Renderer(Window& parent) : OGLRenderer(parent) {
     sphere = Mesh::LoadFromMeshFile("Sphere.msh");
-    quad = Mesh::GenerateQuad();
+
+    terrainQuad = Mesh::GenerateQuad();
     heightMap = new HeightMap(TEXTUREDIR "noise.png");
+    skyboxQuad = Mesh::GenerateQuad();
 
     earthTex = SOIL_load_OGL_texture(
         TEXTUREDIR "Barren Reds.JPG", SOIL_LOAD_AUTO,
@@ -20,14 +22,58 @@ Renderer::Renderer(Window& parent) : OGLRenderer(parent) {
         SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS
     );
 
+    skybox = SOIL_load_OGL_cubemap(
+        TEXTUREDIR "rusted_west.jpg", TEXTUREDIR "rusted_east.jpg",
+        TEXTUREDIR "rusted_up.jpg", TEXTUREDIR "rusted_down.jpg",
+        TEXTUREDIR "rusted_south.jpg", TEXTUREDIR "rusted_north.jpg",
+        SOIL_LOAD_RGB, SOIL_CREATE_NEW_ID, 0
+    );
+
+    waterTex = SOIL_load_OGL_texture(
+        TEXTUREDIR "water.TGA", SOIL_LOAD_AUTO,
+        SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS
+    );
+
+    if (!earthTex || !earthBump || !skybox || !waterTex) {
+        return;
+    }
+
+
+
     SetTextureRepeating(earthTex, true);
     SetTextureRepeating(earthBump, true);
+    SetTextureRepeating(waterTex, true);
+
+
+    skyboxShader = new Shader(
+        "skyboxVertex.glsl", "skyboxFragment.glsl"
+    );
+    lightShader = new Shader(
+        "PerPixelVertex.glsl", "PerPixelFragment.glsl"
+    );
+
+    reflectShader = new Shader(
+        "reflectVertex.glsl", "reflectFragment.glsl"
+    );
+
+    if (!reflectShader->LoadSuccess() ||
+        !skyboxShader->LoadSuccess() ||
+        !lightShader->LoadSuccess()) {
+        return;
+    }
 
     Vector3 heightmapSize = heightMap->GetHeightmapSize();
 
     camera = new Camera(-45.0f, 0.0f,
         heightmapSize * Vector3(0.5f, 5.0f, 0.5f));
+
+    glEnable(GL_DEPTH_TEST);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
+
     pointLights = new Light[LIGHT_NUM];
+
 
     for (int i = 0; i < LIGHT_NUM; ++i) {
         Light& l = pointLights[i];
@@ -96,6 +142,9 @@ Renderer::Renderer(Window& parent) : OGLRenderer(parent) {
     glEnable(GL_CULL_FACE);
     glEnable(GL_BLEND);
 
+    waterRotate = 0.0f;
+    waterCycle = 0.0f;
+
     init = true;
 
 
@@ -109,7 +158,7 @@ Renderer::~Renderer(void) {
     delete heightMap;
     delete camera;
     delete sphere;
-    delete quad;
+    delete terrainQuad;
     delete[] pointLights;
 
     glDeleteTextures(1, &bufferColourTex);
@@ -141,14 +190,42 @@ void Renderer::GenerateScreenTexture(GLuint& into, bool depth) {
 
 void Renderer::UpdateScene(float dt) {
     camera->UpdateCamera(dt);
+    viewMatrix = camera->BuildViewMatrix();
+    waterRotate += dt * 2.0f;
+    waterCycle += dt * 0.25f;
 }
 
 void Renderer::RenderScene() {
     glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
+    DrawSkybox();
+
+
     FillBuffers();
     DrawPointLights();
+
     CombineBuffers();
+
+
 }
+
+void Renderer::DrawSkybox() {
+    glDepthMask(GL_FALSE);
+    glDepthFunc(GL_LEQUAL);
+
+    BindShader(skyboxShader);
+    Matrix4 noTranslation = viewMatrix;
+    noTranslation.SetPositionVector(Vector3(0, 0, 0));
+    glUniformMatrix4fv(glGetUniformLocation(skyboxShader->GetProgram(), "viewMatrix"), 1, false, noTranslation.values);
+    glUniformMatrix4fv(glGetUniformLocation(skyboxShader->GetProgram(), "projMatrix"), 1, false, projMatrix.values);
+
+    UpdateShaderMatrices();
+
+    skyboxQuad->Draw();
+
+    glDepthMask(GL_TRUE);
+    glDepthFunc(GL_LESS);
+}
+
 
 void Renderer::FillBuffers() {
     glBindFramebuffer(GL_FRAMEBUFFER, bufferFBO);
@@ -219,9 +296,11 @@ void Renderer::DrawPointLights() {
 
 void Renderer::CombineBuffers() {
     BindShader(combineShader);
+
+
     modelMatrix.ToIdentity();
-    viewMatrix.ToIdentity();
-    projMatrix.ToIdentity();
+    viewMatrix = camera->BuildViewMatrix();
+    projMatrix = Matrix4::Perspective(1.0f, 1500.0f, float(width) / (float)height, 45.0f);
     UpdateShaderMatrices();
 
     glUniform1i(glGetUniformLocation(combineShader->GetProgram(), "diffuseTex"), 0);
@@ -236,5 +315,11 @@ void Renderer::CombineBuffers() {
     glActiveTexture(GL_TEXTURE2);
     glBindTexture(GL_TEXTURE_2D, lightSpecularTex);
 
-    quad->Draw();
+    glUniform1i(glGetUniformLocation(combineShader->GetProgram(), "specularLight"), 2);
+    glActiveTexture(GL_TEXTURE3);
+    glBindTexture(GL_TEXTURE_2D, bufferDepthTex);
+
+    glEnable(GL_DEPTH_TEST);
+
+    terrainQuad->Draw();
 }
