@@ -1,6 +1,6 @@
 Features complete:
  - Core Features:
-  x Landscape
+  - Landscape
   x Lit by light source
   - Environment mapping (water)
   - Automatic Camera movement
@@ -17,3 +17,9 @@ Features complete:
 Features to do:
  - Portal
  - Lens flare/bloom
+
+
+
+ Features implemented:
+  - Shadow mapping
+  - Skybox

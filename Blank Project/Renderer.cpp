@@ -2,16 +2,59 @@
 
 #include "../nclgl/Light.h"
 #include "../nclgl/Camera.h"
+#include "../nclgl/Heightmap.h"
+#include "../nclgl/Shader.h"
 
 #define SHADOWSIZE 2048
 
 Renderer::Renderer(Window& parent) : OGLRenderer(parent) {
+
+    skyboxQuad = Mesh::GenerateQuad();
     camera = new Camera(-30.0f, 315.0f, Vector3(-8.0f, 5.0f, 8.0f));
     light = new Light(Vector3(-20.0f, 10.0f, -20.0f), Vector4(1, 1, 1, 1), 250.0f);
+    heightMap = new HeightMap(TEXTUREDIR "noise.png");
+
+    cubeMap = SOIL_load_OGL_cubemap(
+        TEXTUREDIR "rusted_west.jpg", TEXTUREDIR "rusted_east.jpg",
+        TEXTUREDIR "rusted_up.jpg", TEXTUREDIR "rusted_down.jpg",
+        TEXTUREDIR "rusted_south.jpg", TEXTUREDIR "rusted_north.jpg",
+        SOIL_LOAD_RGB, SOIL_CREATE_NEW_ID, 0
+    );
+
+    earthTex = SOIL_load_OGL_texture(
+        TEXTUREDIR "Barren Reds.JPG", SOIL_LOAD_AUTO,
+        SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS
+    );
+    
+    earthBump = SOIL_load_OGL_texture(
+        TEXTUREDIR "Barren RedsDOT3.JPG", SOIL_LOAD_AUTO,
+        SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS
+    );
+
+    if (!cubeMap || !earthTex || !earthBump) {
+        return;
+    }
+
+    SetTextureRepeating(earthTex, true);
+    SetTextureRepeating(earthBump, true);
+    //SetTextureRepeating(waterTex, true);
+
     sceneShader = new Shader("shadowscenevert.glsl", "shadowscenefrag.glsl");
     shadowShader = new Shader("shadowVert.glsl", "shadowFrag.glsl");
+    skyboxShader = new Shader(
+        "skyboxVertex.glsl", "skyboxFragment.glsl"
+    );
 
-    if (!sceneShader->LoadSuccess() || !shadowShader->LoadSuccess()) {
+    lightShader = new Shader(
+        "PerPixelVertex.glsl", "PerPixelFragment.glsl"
+    );
+
+
+
+    if (!sceneShader->LoadSuccess() ||
+        !shadowShader->LoadSuccess() || 
+        !skyboxShader->LoadSuccess() ||
+        !lightShader->LoadSuccess()) {
         return;
     }
     glGenTextures(1, &shadowTex);
@@ -19,6 +62,8 @@ Renderer::Renderer(Window& parent) : OGLRenderer(parent) {
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+
+    glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
 
     glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, SHADOWSIZE, SHADOWSIZE, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
 
@@ -75,6 +120,7 @@ void Renderer::UpdateScene(float dt) {
 
 void Renderer::RenderScene() {
     glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
+    DrawSkybox();
     DrawShadowScene();
     DrawMainScene();
 }
@@ -136,3 +182,13 @@ void Renderer::DrawMainScene() {
 
 }
 
+void Renderer::DrawSkybox() {
+    glDepthMask(GL_FALSE);
+
+    BindShader(skyboxShader);
+    UpdateShaderMatrices();
+
+    skyboxQuad->Draw();
+
+    glDepthMask(GL_TRUE);
+}
