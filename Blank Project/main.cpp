@@ -1,20 +1,14 @@
-#include "../nclgl/Window.h"
+#include "../NCLGL/window.h"
 #include "Renderer.h"
 
-#include <iostream>
-
 int main() {
-	Window w("Deferred Rendering!", 1280, 720, false); //This is all boring win32 window creation stuff!
+	Window w("project", 1280, 720, false); //This is all boring win32 window creation stuff!
 	if (!w.HasInitialised()) {
 		return -1;
-		char s;
-		std::cin >> s;
 	}
 
 	Renderer renderer(w); //This handles all the boring OGL 3.2 initialisation stuff, and sets up our tutorial!
 	if (!renderer.HasInitialised()) {
-		char s;
-		std::cin >> s;
 		return -1;
 	}
 
@@ -29,6 +23,5 @@ int main() {
 			Shader::ReloadAllShaders();
 		}
 	}
-
 	return 0;
 }

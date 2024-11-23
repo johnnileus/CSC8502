@@ -27,6 +27,6 @@ void main(void) {
     fragColour.xyz += specular; // Specular
     fragColour.a = 0.9;
     
-    fragColour = vec4(depth,0,0,1);
+    fragColour =  texture(depthTex, IN.texCoord);
 
 }

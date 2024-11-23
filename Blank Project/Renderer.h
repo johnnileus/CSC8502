@@ -1,55 +1,35 @@
 #pragma once
+
 #include "../nclgl/OGLRenderer.h"
 
 class Camera;
 class Mesh;
-class HeightMap;
 
 class Renderer : public OGLRenderer {
 public:
     Renderer(Window& parent);
     ~Renderer(void);
 
-    void RenderScene() override;
     void UpdateScene(float dt) override;
-
+    void RenderScene() override;
 
 protected:
-    void FillBuffers();             // G-Buffer Fill Render Pass
-    void DrawPointLights();         // Lighting Render Pass
-    void CombineBuffers();          // Combination Render Pass
-    void GenerateScreenTexture(GLuint& into, bool depth = false);
-    void DrawSkybox();
+    void DrawShadowScene();
+    void DrawMainScene();
 
-    Shader* sceneShader;            // Shader to fill our G-Buffers
-    Shader* pointlightShader;       // Shader to calculate lighting
-    Shader* combineShader;          // Shader to stick it all together
+    GLuint shadowTex;
+    GLuint shadowFBO;
 
-    Shader* lightShader;
-    Shader* reflectShader;
-    Shader* skyboxShader;
+    GLuint sceneDiffuse;
+    GLuint sceneBump;
+    float sceneTime;
 
-    GLuint bufferFBO;               // FBO for our G-Buffer pass
-    GLuint bufferColourTex;         // Albedo goes here
-    GLuint bufferNormalTex;         // Normals go here
-    GLuint bufferDepthTex;          // Depth goes here
+    Shader* sceneShader;
+    Shader* shadowShader;
 
-    GLuint pointLightFBO;           // FBO for our lighting pass
-    GLuint lightDiffuseTex;         // Store diffuse lighting
-    GLuint lightSpecularTex;        // Store specular lighting
+    vector<Mesh*> sceneMeshes;
+    vector<Matrix4> sceneTransforms;
 
-    HeightMap* heightMap;           // Terrain
-    Light* pointLights;             // Array of lighting data
-    Mesh* sphere;                   // Light volume
-    Mesh* terrainQuad;                     // To draw a full-screen quad
-    Mesh* skyboxQuad;
-    Camera* camera;                 // Our usual camera
-  
-    GLuint earthTex;                // Texture for the terrain
-    GLuint earthBump;               // Bump map for the terrain
-    GLuint waterTex;
-    GLuint skybox;
-
-    float waterRotate;
-    float waterCycle;
+    Camera* camera;
+    Light* light;
 };
