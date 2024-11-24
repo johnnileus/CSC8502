@@ -139,12 +139,13 @@ void Renderer::UpdateScene(float dt) {
 }
 
 void Renderer::RenderScene() {
-
+    
     BuildNodeLists(root);
     SortNodeLists();
 
 
     glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
+    DrawSkybox();
 
     BindShader(shader);
     UpdateShaderMatrices();
@@ -152,7 +153,7 @@ void Renderer::RenderScene() {
     glUniform1i(glGetUniformLocation(shader->GetProgram(), "diffuseTex"), 0);
     DrawNodes();
     ClearNodeLists();
-    DrawSkybox();
+
 
     DrawHeightmap();
     DrawShadowScene();
