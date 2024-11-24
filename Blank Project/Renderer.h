@@ -1,6 +1,11 @@
 #pragma once
 
 #include "../nclgl/OGLRenderer.h"
+#include "../nclgl/SceneNode.h"
+#include "../nclgl/Frustum.h"
+
+
+
 
 class Camera;
 class Mesh;
@@ -15,6 +20,12 @@ public:
     void RenderScene() override;
 
 protected:
+
+    void BuildNodeLists(SceneNode* from);
+    void SortNodeLists();
+    void ClearNodeLists();
+    void DrawNodes();
+    void DrawNode(SceneNode* n);
 
     void DrawHeightmap();
     void DrawWater();
@@ -50,5 +61,16 @@ protected:
     GLuint earthTex;
     GLuint earthBump;
 
+    SceneNode* root;
+    Mesh* quad;
+    Mesh* cube;
+    Shader* shader;
+    GLuint texture;
+    Frustum frameFrustum;
+
+
+
+    vector<SceneNode*> transparentNodeList;
+    vector<SceneNode*> nodeList;
 
 };
