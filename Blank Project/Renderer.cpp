@@ -9,10 +9,19 @@
 
 Renderer::Renderer(Window& parent) : OGLRenderer(parent) {
 
+
+    heightMap = new HeightMap(TEXTUREDIR "noise.png");
+    Vector3 heightmapSize = heightMap->GetHeightmapSize();
+
+
     skyboxQuad = Mesh::GenerateQuad();
     camera = new Camera(-30.0f, 315.0f, Vector3(-8.0f, 5.0f, 8.0f));
-    light = new Light(Vector3(-20.0f, 10.0f, -20.0f), Vector4(1, 1, 1, 1), 250.0f);
-    heightMap = new HeightMap(TEXTUREDIR "noise.png");
+
+    light = new Light(
+        heightmapSize * Vector3(0.5f, 1.5f, 0.5f),
+        Vector4(1, 1, 1, 1), heightmapSize.x
+    );
+
 
     cubeMap = SOIL_load_OGL_cubemap(
         TEXTUREDIR "rusted_west.jpg", TEXTUREDIR "rusted_east.jpg",
@@ -57,12 +66,17 @@ Renderer::Renderer(Window& parent) : OGLRenderer(parent) {
         !lightShader->LoadSuccess()) {
         return;
     }
+
+
+
     glGenTextures(1, &shadowTex);
     glBindTexture(GL_TEXTURE_2D, shadowTex);
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
 
     glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, SHADOWSIZE, SHADOWSIZE, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
@@ -111,6 +125,8 @@ void Renderer::UpdateScene(float dt) {
     camera->UpdateCamera(dt);
     sceneTime += dt;
 
+    viewMatrix = camera->BuildViewMatrix();
+
     for (int i = 1; i < 4; ++i) { // skip the floor!
         Vector3 t = Vector3(-10 + (5 * i), 2.0f + sin(sceneTime * i), 0);
         sceneTransforms[i] = Matrix4::Translation(t) *
@@ -121,6 +137,7 @@ void Renderer::UpdateScene(float dt) {
 void Renderer::RenderScene() {
     glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
     DrawSkybox();
+    DrawHeightmap();
     DrawShadowScene();
     DrawMainScene();
 }
@@ -149,6 +166,27 @@ void Renderer::DrawShadowScene() {
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
+}
+
+void Renderer::DrawHeightmap() {
+    BindShader(lightShader);
+    SetShaderLight(*light);
+    glUniform3fv(glGetUniformLocation(lightShader->GetProgram(), "cameraPos"), 1, (float*)&camera->GetPosition());
+
+    glUniform1i(glGetUniformLocation(lightShader->GetProgram(), "diffuseTex"), 0);
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, earthTex);
+
+    glUniform1i(glGetUniformLocation(lightShader->GetProgram(), "bumpTex"), 1);
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_2D, earthBump);
+
+    modelMatrix.ToIdentity(); // New!
+    textureMatrix.ToIdentity(); // New!
+
+    UpdateShaderMatrices();
+
+    heightMap->Draw();
 }
 
 void Renderer::DrawMainScene() {
