@@ -9,8 +9,8 @@ Renderer::Renderer(Window& parent) : OGLRenderer(parent) {
     Vector3 dimensions = heightMap->GetHeightmapSize();
     camera->SetPosition(dimensions * Vector3(0.5, 2, 0.5));
 
-    shader = new Shader("TexturedVertex.glsl", "TexturedFragment.glsl");
-    if (!shader->LoadSuccess()) {
+    testPlaneShader = new Shader("TexturedVertex.glsl", "TexturedFragment.glsl");
+    if (!testPlaneShader->LoadSuccess()) {
         return;
     }
 
@@ -40,10 +40,10 @@ void Renderer::UpdateScene(float dt) {
 void Renderer::RenderScene() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    BindShader(shader);
+    BindShader(testPlaneShader);
     UpdateShaderMatrices();
 
-    glUniform1i(glGetUniformLocation(shader->GetProgram(), "diffuseTex"), 0);
+    glUniform1i(glGetUniformLocation(testPlaneShader->GetProgram(), "diffuseTex"), 0);
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, terrainTex);
     heightMap->Draw();

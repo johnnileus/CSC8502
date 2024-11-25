@@ -18,7 +18,13 @@ Renderer::Renderer(Window& parent) : OGLRenderer(parent) {
 
     root = new SceneNode();
     cube = Mesh::LoadFromMeshFile("OffsetCubeY.msh");
-    root->AddChild(new CubeRobot(cube));
+    quad = Mesh::GenerateQuad();
+
+
+    planeTexture = SOIL_load_OGL_texture(TEXTUREDIR "stainedglass.tga", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, 0);
+
+
+
 
 
     heightMap = new HeightMap(TEXTUREDIR "noise.png");
@@ -56,17 +62,35 @@ Renderer::Renderer(Window& parent) : OGLRenderer(parent) {
         "PerPixelVertex.glsl", "PerPixelFragment.glsl"
     );
 
-    shader = new Shader("SceneVertex.glsl", "SceneFragment.glsl");
+    testPlaneShader = new Shader("SceneVertex.glsl", "SceneFragment.glsl");
 
+    //Shader* defaultShader = new Shader("defaultVertex.glsl", "defaultFrag.glsl");
 
 
     if (!sceneShader->LoadSuccess() ||
         !shadowShader->LoadSuccess() || 
         !skyboxShader->LoadSuccess() ||
         !lightShader->LoadSuccess() || 
-        !shader -> LoadSuccess()) {
+        !testPlaneShader -> LoadSuccess()) {
         return;
     }
+
+
+    //Generate objects
+    root->AddChild(new CubeRobot(cube, testPlaneShader));
+
+    for (int i = 0; i < 5; ++i) {
+        SceneNode* s = new SceneNode();
+        s->SetColour(Vector4(1.0f, 1.0f, 1.0f, 0.5f));
+        s->SetTransform(Matrix4::Translation(Vector3(0, 100.0f, -300.0f + 100.0f + 100 * i)));
+        s->SetModelScale(Vector3(100.0f, 100.0f, 100.0f));
+        s->SetBoundingRadius(100.0f);
+        s->SetMesh(quad);
+        s->SetTexture(planeTexture);
+        //s->SetShader(testPlaneShader);
+        root->AddChild(s);
+    }
+
 
 
 
@@ -146,16 +170,16 @@ void Renderer::RenderScene() {
 
     glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
     DrawSkybox();
+    DrawHeightmap();
 
-    BindShader(shader);
+    BindShader(testPlaneShader);
     UpdateShaderMatrices();
-
-    glUniform1i(glGetUniformLocation(shader->GetProgram(), "diffuseTex"), 0);
+     
+    glUniform1i(glGetUniformLocation(testPlaneShader->GetProgram(), "diffuseTex"), 0);
     DrawNodes();
     ClearNodeLists();
 
 
-    DrawHeightmap();
     DrawShadowScene();
     DrawMainScene();
 }
@@ -221,21 +245,22 @@ void Renderer::DrawNodes() {
 
 void Renderer::DrawNode(SceneNode* n) {
     if (n->GetMesh()) {
+
         Matrix4 model = n->GetWorldTransform() * Matrix4::Scale(n->GetModelScale());
         glUniformMatrix4fv(
-            glGetUniformLocation(shader->GetProgram(), "modelMatrix"), 1, false, model.values
+            glGetUniformLocation(testPlaneShader->GetProgram(), "modelMatrix"), 1, false, model.values
         );
 
         glUniform4fv(
-            glGetUniformLocation(shader->GetProgram(), "nodeColour"), 1, (float*)&n->GetColour()
+            glGetUniformLocation(testPlaneShader->GetProgram(), "nodeColour"), 1, (float*)&n->GetColour()
         );
 
-        texture = n->GetTexture();
+        planeTexture = n->GetTexture();
         glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, texture);
+        glBindTexture(GL_TEXTURE_2D, planeTexture);
 
         glUniform1i(
-            glGetUniformLocation(shader->GetProgram(), "useTexture"), texture
+            glGetUniformLocation(testPlaneShader->GetProgram(), "useTexture"), planeTexture
         );
 
         n->Draw(*this);

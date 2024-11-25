@@ -64,8 +64,8 @@ protected:
     SceneNode* root;
     Mesh* quad;
     Mesh* cube;
-    Shader* shader;
-    GLuint texture;
+    Shader* testPlaneShader;
+    GLuint planeTexture;
     Frustum frameFrustum;
 
 

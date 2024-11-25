@@ -23,8 +23,8 @@ public:
     Mesh* GetMesh() const { return mesh; }
     void SetMesh(Mesh* m) { mesh = m; }
 
-    Shader* GetShader() const { return shader; }
-    void SetShader(Shader* s) { shader = s; }
+    //Shader* GetShader();
+    //void SetShader(Shader* s) { shader = s; }
 
     void AddChild(SceneNode* s);
 
@@ -48,6 +48,8 @@ public:
     void SetTexture(GLuint tex) { texture = tex; }
     GLuint GetTexture() const { return texture; }
 
+    //static void SetDefaultShader(Shader* shader) { defaultShader = shader; }
+
     static bool CompareByCameraDistance(SceneNode* a, SceneNode* b) {
         return (a->distanceFromCamera < b->distanceFromCamera) ? true : false;
     }
@@ -61,6 +63,8 @@ protected:
     Vector3 modelScale;
     Vector4 colour;
     std::vector<SceneNode*> children;
+
+    inline static Shader* defaultShader = nullptr;
     
 
     float distanceFromCamera;

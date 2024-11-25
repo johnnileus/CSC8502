@@ -6,16 +6,31 @@ SceneNode::SceneNode(Mesh* mesh, Vector4 colour) {
     parent = NULL;
     modelScale = Vector3(1, 1, 1);
 
+
     boundingRadius = 1.0f;
     distanceFromCamera = 0.0f;
     texture = 0;
 }
+
 
 SceneNode::~SceneNode(void) {
     for (unsigned int i = 0; i < children.size(); ++i) {
         delete children[i];
     }
 }
+
+//Shader* SceneNode::GetShader() {
+//    if (shader) { return shader; }
+//    else { 
+//        if (defaultShader) {
+//            return defaultShader;
+//        }
+//        else {
+//            std::cerr << "ERROR!" << std::endl;
+//            return nullptr;
+//        }
+//    }
+//}
 
 void SceneNode::AddChild(SceneNode* s) {
     children.push_back(s);

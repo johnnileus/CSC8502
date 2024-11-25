@@ -12,7 +12,7 @@ public:
     void UpdateScene(float dt) override;
 protected:
     HeightMap* heightMap;
-    Shader* shader;
+    Shader* testPlaneShader;
     Camera* camera;
     GLuint terrainTex;
 };
@@ -20,6 +20,6 @@ protected:
 inline Renderer::~Renderer(void) {
     delete heightMap;
     delete camera;
-    delete shader;
+    delete testPlaneShader;
 }
 
