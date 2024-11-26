@@ -51,6 +51,10 @@ public:
 	OGLRenderer(Window &parent);
 	virtual ~OGLRenderer(void);
 
+	void			BindShader(Shader* s);
+	void			UpdateShaderMatrices();
+
+
 	virtual void	RenderScene()		= 0;
 	virtual void	UpdateScene(float msec);
 	void			SwapBuffers();
@@ -59,10 +63,15 @@ public:
 	
 	void SetShaderLight(const Light& l);
 
+
+	Matrix4 projMatrix;		//Projection matrix
+	Matrix4 modelMatrix;	//Model matrix. NOT MODELVIEW
+	Matrix4 viewMatrix;		//View matrix
+	Matrix4 textureMatrix;	//Texture matrix
+	Matrix4 shadowMatrix;
+
 protected:
 	virtual void	Resize(int x, int y);	
-	void			UpdateShaderMatrices();
-	void			BindShader(Shader*s);
 
 	void StartDebugGroup(const std::string& s) {
 		glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, 0, (GLsizei)s.length(), s.c_str());
@@ -74,11 +83,6 @@ protected:
 	void SetTextureRepeating(GLuint target, bool state);
 
 
-	Matrix4 projMatrix;		//Projection matrix
-	Matrix4 modelMatrix;	//Model matrix. NOT MODELVIEW
-	Matrix4 viewMatrix;		//View matrix
-	Matrix4 textureMatrix;	//Texture matrix
-	Matrix4 shadowMatrix;
 
 	int		width;			//Render area width (not quite the same as window width)
 	int		height;			//Render area height (not quite the same as window height)

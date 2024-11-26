@@ -29,7 +29,7 @@ public:
     void AddChild(SceneNode* s);
 
     virtual void Update(float dt);
-    virtual void Draw(const OGLRenderer& r);
+    virtual void Draw(OGLRenderer& r);
 
     std::vector<SceneNode*>::const_iterator GetChildIteratorStart() {
         return children.begin();
@@ -48,11 +48,19 @@ public:
     void SetTexture(GLuint tex) { texture = tex; }
     GLuint GetTexture() const { return texture; }
 
-    //static void SetDefaultShader(Shader* shader) { defaultShader = shader; }
+    void SetShader(Shader* s) { shader = s; }
+    Shader* GetShader();
+
+
+    static void SetDefaultShader(Shader* shader) {
+        defaultShader = shader;
+    }
+
 
     static bool CompareByCameraDistance(SceneNode* a, SceneNode* b) {
         return (a->distanceFromCamera < b->distanceFromCamera) ? true : false;
     }
+    bool drawable = false;
 
 protected:
     SceneNode* parent;
@@ -64,7 +72,9 @@ protected:
     Vector4 colour;
     std::vector<SceneNode*> children;
 
-    inline static Shader* defaultShader = nullptr;
+
+    inline static Shader* defaultShader;
+    
     
 
     float distanceFromCamera;

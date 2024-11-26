@@ -1,10 +1,10 @@
+
 #include "Renderer.h"
 #include <algorithm> // For std::sort ...
 
 
 #include "../nclgl/Light.h"
 #include "../nclgl/Camera.h"
-#include "../nclgl/Heightmap.h"
 #include "../nclgl/Shader.h"
 #include "../nclgl/CubeRobot.h"
 
@@ -25,31 +25,33 @@ Renderer::Renderer(Window& parent) : OGLRenderer(parent) {
 
 
 
-
-
-    heightMap = new HeightMap(TEXTUREDIR "noise.png");
-    Vector3 heightmapSize = heightMap->GetHeightmapSize();
+    map = new HeightMapNode();
+    map->heightMap = new HeightMap(TEXTUREDIR "noise.png");
+    Vector3 heightmapSize = map->heightMap->GetHeightmapSize();
 
 
     skyboxQuad = Mesh::GenerateQuad();
     camera = new Camera(-30.0f, 315.0f, Vector3(-8.0f, 5.0f, 8.0f));
+    map->SetCamera(camera);
 
-    light = new Light(
+    mainLight = new Light(
         heightmapSize * Vector3(0.5f, 1.5f, 0.5f),
         Vector4(1, 1, 1, 1), heightmapSize.x
     );
+    map->SetMainLight(mainLight);
 
 
     cubeMap = SOIL_load_OGL_cubemap(TEXTUREDIR "rusted_west.jpg", TEXTUREDIR "rusted_east.jpg",TEXTUREDIR "rusted_up.jpg", TEXTUREDIR "rusted_down.jpg",TEXTUREDIR "rusted_south.jpg", TEXTUREDIR "rusted_north.jpg",SOIL_LOAD_RGB, SOIL_CREATE_NEW_ID, 0);
-    earthTex = SOIL_load_OGL_texture(TEXTUREDIR "Barren Reds.JPG", SOIL_LOAD_AUTO,SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS);
-    earthBump = SOIL_load_OGL_texture(TEXTUREDIR "Barren RedsDOT3.JPG", SOIL_LOAD_AUTO,SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS);
+    
+    map->SetEarthTex(SOIL_load_OGL_texture(TEXTUREDIR "Barren Reds.JPG", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS));
+    map->SetEarthBump(SOIL_load_OGL_texture(TEXTUREDIR "Barren RedsDOT3.JPG", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS));
 
-    if (!cubeMap || !earthTex || !earthBump) {
+    if (!cubeMap) {
         return;
     }
 
-    SetTextureRepeating(earthTex, true);
-    SetTextureRepeating(earthBump, true);
+    SetTextureRepeating(map->GetEarthTex(), true);
+    SetTextureRepeating(map->GetEarthBump(), true);
     //SetTextureRepeating(waterTex, true);
 
     sceneShader = new Shader("shadowscenevert.glsl", "shadowscenefrag.glsl");
@@ -64,30 +66,42 @@ Renderer::Renderer(Window& parent) : OGLRenderer(parent) {
 
     testPlaneShader = new Shader("SceneVertex.glsl", "SceneFragment.glsl");
 
-    //Shader* defaultShader = new Shader("defaultVertex.glsl", "defaultFrag.glsl");
+    Shader* defaultShader = new Shader("defaultVertex.glsl", "defaultFrag.glsl");
 
 
     if (!sceneShader->LoadSuccess() ||
         !shadowShader->LoadSuccess() || 
         !skyboxShader->LoadSuccess() ||
         !lightShader->LoadSuccess() || 
-        !testPlaneShader -> LoadSuccess()) {
+        !testPlaneShader -> LoadSuccess() ||
+        !defaultShader->LoadSuccess()) {
         return;
     }
 
+    SceneNode::SetDefaultShader(defaultShader);
 
     //Generate objects
-    root->AddChild(new CubeRobot(cube, testPlaneShader));
+    //root->AddChild(new CubeRobot(cube, testPlaneShader));
+    map->SetBoundingRadius(100000.0f);
+    map->SetModelScale({ 100.0f,100.0f,100.0f });
+    map->SetTransform(Matrix4::Translation(Vector3(0, 0, 0)));
+    map->SetColour({ 0, 0, 0, 1 });
+    map->SetShader(lightShader);
+    map->drawable = true;
 
+
+
+    root->AddChild(map);
     for (int i = 0; i < 5; ++i) {
-        SceneNode* s = new SceneNode();
+        SceneNode* s = new TestPlane();
         s->SetColour(Vector4(1.0f, 1.0f, 1.0f, 0.5f));
         s->SetTransform(Matrix4::Translation(Vector3(0, 100.0f, -300.0f + 100.0f + 100 * i)));
         s->SetModelScale(Vector3(100.0f, 100.0f, 100.0f));
         s->SetBoundingRadius(100.0f);
         s->SetMesh(quad);
+        s->drawable = true;
         s->SetTexture(planeTexture);
-        //s->SetShader(testPlaneShader);
+        s->SetShader(testPlaneShader);
         root->AddChild(s);
     }
 
@@ -170,7 +184,7 @@ void Renderer::RenderScene() {
 
     glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
     DrawSkybox();
-    DrawHeightmap();
+    //DrawHeightmap();
 
     BindShader(testPlaneShader);
     UpdateShaderMatrices();
@@ -192,8 +206,9 @@ void Renderer::DrawShadowScene() {
     glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
 
     BindShader(shadowShader);
+    auto mapPos = map->heightMap->GetHeightmapSize();
     viewMatrix = Matrix4::BuildViewMatrix(
-        light->GetPosition(), Vector3(0, 0, 0));
+        mainLight->GetPosition(), Vector3(mapPos.x * 0.5, 0, mapPos.z * 0.5));
     projMatrix = Matrix4::Perspective(1, 100, 1, 45);
     shadowMatrix = projMatrix * viewMatrix; // used later
 
@@ -201,7 +216,11 @@ void Renderer::DrawShadowScene() {
         modelMatrix = sceneTransforms[i];
         UpdateShaderMatrices();
         sceneMeshes[i]->Draw();
+        
     }
+    modelMatrix.ToIdentity();
+    UpdateShaderMatrices();
+    map->heightMap->Draw();
 
     glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
     glViewport(0, 0, width, height);
@@ -244,53 +263,37 @@ void Renderer::DrawNodes() {
 }
 
 void Renderer::DrawNode(SceneNode* n) {
-    if (n->GetMesh()) {
+    if (n->drawable) {
 
-        Matrix4 model = n->GetWorldTransform() * Matrix4::Scale(n->GetModelScale());
-        glUniformMatrix4fv(
-            glGetUniformLocation(testPlaneShader->GetProgram(), "modelMatrix"), 1, false, model.values
-        );
-
-        glUniform4fv(
-            glGetUniformLocation(testPlaneShader->GetProgram(), "nodeColour"), 1, (float*)&n->GetColour()
-        );
-
-        planeTexture = n->GetTexture();
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, planeTexture);
-
-        glUniform1i(
-            glGetUniformLocation(testPlaneShader->GetProgram(), "useTexture"), planeTexture
-        );
 
         n->Draw(*this);
     }
 }
 
 void Renderer::DrawHeightmap() {
-    BindShader(lightShader);
-    SetShaderLight(*light);
-    glUniform3fv(glGetUniformLocation(lightShader->GetProgram(), "cameraPos"), 1, (float*)&camera->GetPosition());
+    //BindShader(lightShader);
+    //SetShaderLight(*mainLight);
+    //glUniform3fv(glGetUniformLocation(lightShader->GetProgram(), "cameraPos"), 1, (float*)&camera->GetPosition());
 
-    glUniform1i(glGetUniformLocation(lightShader->GetProgram(), "diffuseTex"), 0);
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, earthTex);
+    //glUniform1i(glGetUniformLocation(lightShader->GetProgram(), "diffuseTex"), 0);
+    //glActiveTexture(GL_TEXTURE0);
+    //glBindTexture(GL_TEXTURE_2D, earthTex);
 
-    glUniform1i(glGetUniformLocation(lightShader->GetProgram(), "bumpTex"), 1);
-    glActiveTexture(GL_TEXTURE1);
-    glBindTexture(GL_TEXTURE_2D, earthBump);
+    //glUniform1i(glGetUniformLocation(lightShader->GetProgram(), "bumpTex"), 1);
+    //glActiveTexture(GL_TEXTURE1);
+    //glBindTexture(GL_TEXTURE_2D, earthBump);
 
-    modelMatrix.ToIdentity(); // New!
-    textureMatrix.ToIdentity(); // New!
+    //modelMatrix.ToIdentity(); // New!
+    //textureMatrix.ToIdentity(); // New!
 
-    UpdateShaderMatrices();
+    //UpdateShaderMatrices();
 
-    heightMap->Draw();
+    //heightMap->Draw();
 }
 
 void Renderer::DrawMainScene() {
     BindShader(sceneShader);
-    SetShaderLight(*light);
+    SetShaderLight(*mainLight);
     viewMatrix = camera->BuildViewMatrix();
     projMatrix = Matrix4::Perspective(1.0f, 15000.0f,
         (float)width / (float)height, 45.0f);

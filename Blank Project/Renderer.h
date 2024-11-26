@@ -3,6 +3,7 @@
 #include "../nclgl/OGLRenderer.h"
 #include "../nclgl/SceneNode.h"
 #include "../nclgl/Frustum.h"
+#include "SceneNodeVariants.h"
 
 
 
@@ -51,15 +52,15 @@ protected:
     vector<Matrix4> sceneTransforms;
 
     HeightMap* heightMap;
+    HeightMapNode* map;
     Mesh* skyboxQuad;
 
     Camera* camera;
-    Light* light;
+    Light* mainLight;
 
     GLuint cubeMap;
     GLuint waterTex;
-    GLuint earthTex;
-    GLuint earthBump;
+
 
     SceneNode* root;
     Mesh* quad;

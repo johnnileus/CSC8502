@@ -6,6 +6,8 @@ SceneNode::SceneNode(Mesh* mesh, Vector4 colour) {
     parent = NULL;
     modelScale = Vector3(1, 1, 1);
 
+    if (mesh) drawable = true;
+
 
     boundingRadius = 1.0f;
     distanceFromCamera = 0.0f;
@@ -19,26 +21,21 @@ SceneNode::~SceneNode(void) {
     }
 }
 
-//Shader* SceneNode::GetShader() {
-//    if (shader) { return shader; }
-//    else { 
-//        if (defaultShader) {
-//            return defaultShader;
-//        }
-//        else {
-//            std::cerr << "ERROR!" << std::endl;
-//            return nullptr;
-//        }
-//    }
-//}
+Shader* SceneNode::GetShader() {
+    if (shader) { return shader; }
+    else { 
+        std::cout << "returned default shader" << std::endl;
+        return defaultShader;
+    }
+}
 
 void SceneNode::AddChild(SceneNode* s) {
     children.push_back(s);
     s->parent = this;
 }
 
-void SceneNode::Draw(const OGLRenderer& r) {
-    if (mesh) {
+void SceneNode::Draw(OGLRenderer& r) {
+    if (drawable) {
         mesh->Draw();
     }
 }
