@@ -28,7 +28,6 @@ protected:
     void DrawNodes();
     void DrawNode(SceneNode* n);
 
-    void DrawHeightmap();
     void DrawWater();
     void DrawSkybox();
 
@@ -47,6 +46,7 @@ protected:
     Shader* shadowShader;
     Shader* skyboxShader;
     Shader* lightShader;
+    Shader* reflectShader;
 
     vector<Mesh*> sceneMeshes;
     vector<Matrix4> sceneTransforms;
@@ -57,6 +57,7 @@ protected:
 
     Camera* camera;
     Light* mainLight;
+    Light* sideLight;
 
     GLuint cubeMap;
     GLuint waterTex;
@@ -69,6 +70,8 @@ protected:
     GLuint planeTexture;
     Frustum frameFrustum;
 
+    float waterRotate;
+    float waterCycle;
 
 
     vector<SceneNode*> transparentNodeList;

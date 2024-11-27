@@ -27,7 +27,6 @@ void TestPlane::Draw(OGLRenderer& r) {
 
 void HeightMapNode::Draw(OGLRenderer& r) {
     OGLRenderer& render = r;
-    std::cout << "AAAAA" << std::endl;
     render.BindShader(shader);
     render.SetShaderLight(*light);
     glUniform3fv(glGetUniformLocation(shader->GetProgram(), "cameraPos"), 1, (float*)&camera->GetPosition());
@@ -46,4 +45,33 @@ void HeightMapNode::Draw(OGLRenderer& r) {
     render.UpdateShaderMatrices();
 
     heightMap->Draw();
+}
+
+void WaterNode::Draw(OGLRenderer& r) {
+    r.BindShader(shader);
+
+    glUniform3fv(glGetUniformLocation(shader->GetProgram(), "cameraPos"), 1, (float*)&camera->GetPosition());
+
+    glUniform1i(glGetUniformLocation(shader->GetProgram(), "diffuseTex"), 0);
+    glUniform1i(glGetUniformLocation(shader->GetProgram(), "cubeTex"), 2);
+
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, waterTex);
+
+    glActiveTexture(GL_TEXTURE2);
+    glBindTexture(GL_TEXTURE_CUBE_MAP, cubeMap);
+
+    r.modelMatrix =
+        Matrix4::Translation(hSize * 0.5f) *
+        Matrix4::Scale(hSize * 0.5f) *
+        Matrix4::Rotation(90, Vector3(1, 0, 0));
+
+    r.textureMatrix =
+        Matrix4::Translation(Vector3(0.0f, 0.0f, 0.0f)) *
+        Matrix4::Scale(Vector3(10, 10, 10)) *
+        Matrix4::Rotation(0.0f, Vector3(0, 0, 1));
+
+    r.UpdateShaderMatrices();
+    // SetShaderLight(*light); // No lighting in this shader!
+    mesh->Draw();
 }

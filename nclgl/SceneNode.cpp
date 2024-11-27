@@ -24,7 +24,7 @@ SceneNode::~SceneNode(void) {
 Shader* SceneNode::GetShader() {
     if (shader) { return shader; }
     else { 
-        std::cout << "returned default shader" << std::endl;
+        std::cout << "--- returned default shader" << std::endl;
         return defaultShader;
     }
 }

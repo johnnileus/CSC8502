@@ -38,6 +38,9 @@ Renderer::Renderer(Window& parent) : OGLRenderer(parent) {
         heightmapSize * Vector3(0.5f, 1.5f, 0.5f),
         Vector4(1, 1, 1, 1), heightmapSize.x
     );
+
+    sideLight = new Light(Vector3(-20.0f, 10.0f, -20.0f), Vector4(1, 1, 1, 1), 250.0f);
+
     map->SetMainLight(mainLight);
 
 
@@ -46,7 +49,12 @@ Renderer::Renderer(Window& parent) : OGLRenderer(parent) {
     map->SetEarthTex(SOIL_load_OGL_texture(TEXTUREDIR "Barren Reds.JPG", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS));
     map->SetEarthBump(SOIL_load_OGL_texture(TEXTUREDIR "Barren RedsDOT3.JPG", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS));
 
-    if (!cubeMap) {
+    waterTex = SOIL_load_OGL_texture(
+        TEXTUREDIR "water.TGA", SOIL_LOAD_AUTO,
+        SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS
+    );
+
+    if (!cubeMap || !waterTex) {
         return;
     }
 
@@ -66,6 +74,10 @@ Renderer::Renderer(Window& parent) : OGLRenderer(parent) {
 
     testPlaneShader = new Shader("SceneVertex.glsl", "SceneFragment.glsl");
 
+    reflectShader = new Shader(
+        "reflectVertex.glsl", "reflectFragment.glsl"
+    );
+
     Shader* defaultShader = new Shader("defaultVertex.glsl", "defaultFrag.glsl");
 
 
@@ -74,6 +86,7 @@ Renderer::Renderer(Window& parent) : OGLRenderer(parent) {
         !skyboxShader->LoadSuccess() ||
         !lightShader->LoadSuccess() || 
         !testPlaneShader -> LoadSuccess() ||
+        !reflectShader -> LoadSuccess() ||
         !defaultShader->LoadSuccess()) {
         return;
     }
@@ -89,7 +102,16 @@ Renderer::Renderer(Window& parent) : OGLRenderer(parent) {
     map->SetShader(lightShader);
     map->drawable = true;
 
+    WaterNode* water = new WaterNode();
+    water->SetColour({ 1.0f,1.0f,1.0f,0.5f });
+    water->drawable = true;
+    water->SetShader(reflectShader);
+    water->SetCamera(camera);
+    water->SetMesh(quad);
+    water->SetWaterTex(waterTex);
+    water->SetCubeMap(cubeMap);
 
+    water->SetHSize(map->heightMap->GetHeightmapSize());
 
     root->AddChild(map);
     for (int i = 0; i < 5; ++i) {
@@ -104,7 +126,6 @@ Renderer::Renderer(Window& parent) : OGLRenderer(parent) {
         s->SetShader(testPlaneShader);
         root->AddChild(s);
     }
-
 
 
 
@@ -144,6 +165,10 @@ Renderer::Renderer(Window& parent) : OGLRenderer(parent) {
     sceneTransforms[0] = Matrix4::Rotation(90, Vector3(1, 0, 0)) *
         Matrix4::Scale(Vector3(10, 10, 1));
     sceneTime = 0.0f;
+
+    waterRotate = 0.0f;
+    waterCycle = 0.0f;
+
     init = true;
 
 }
@@ -193,6 +218,7 @@ void Renderer::RenderScene() {
     DrawNodes();
     ClearNodeLists();
 
+    DrawWater();
 
     DrawShadowScene();
     DrawMainScene();
@@ -208,7 +234,7 @@ void Renderer::DrawShadowScene() {
     BindShader(shadowShader);
     auto mapPos = map->heightMap->GetHeightmapSize();
     viewMatrix = Matrix4::BuildViewMatrix(
-        mainLight->GetPosition(), Vector3(mapPos.x * 0.5, 0, mapPos.z * 0.5));
+        sideLight->GetPosition(), Vector3(0,0,0));
     projMatrix = Matrix4::Perspective(1, 100, 1, 45);
     shadowMatrix = projMatrix * viewMatrix; // used later
 
@@ -226,6 +252,38 @@ void Renderer::DrawShadowScene() {
     glViewport(0, 0, width, height);
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+}
+
+void Renderer::DrawWater() {
+    BindShader(reflectShader);
+
+    glUniform3fv(glGetUniformLocation(reflectShader->GetProgram(), "cameraPos"), 1, (float*)&camera->GetPosition());
+
+    glUniform1i(glGetUniformLocation(reflectShader->GetProgram(), "diffuseTex"), 0);
+    glUniform1i(glGetUniformLocation(reflectShader->GetProgram(), "cubeTex"), 2);
+
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, waterTex);
+
+    glActiveTexture(GL_TEXTURE2);
+    glBindTexture(GL_TEXTURE_CUBE_MAP, cubeMap);
+
+    Vector3 hSize = map->heightMap->GetHeightmapSize();
+
+    modelMatrix =
+        Matrix4::Translation(hSize * 0.5f) *
+        Matrix4::Scale(hSize * 0.5f) *
+        Matrix4::Rotation(90, Vector3(1, 0, 0));
+
+    textureMatrix =
+        Matrix4::Translation(Vector3(waterCycle, 0.0f, waterCycle)) *
+        Matrix4::Scale(Vector3(10, 10, 10)) *
+        Matrix4::Rotation(waterRotate, Vector3(0, 0, 1));
+
+    UpdateShaderMatrices();
+    // SetShaderLight(*light); // No lighting in this shader!
+    quad->Draw();
 
 }
 
@@ -270,30 +328,10 @@ void Renderer::DrawNode(SceneNode* n) {
     }
 }
 
-void Renderer::DrawHeightmap() {
-    //BindShader(lightShader);
-    //SetShaderLight(*mainLight);
-    //glUniform3fv(glGetUniformLocation(lightShader->GetProgram(), "cameraPos"), 1, (float*)&camera->GetPosition());
-
-    //glUniform1i(glGetUniformLocation(lightShader->GetProgram(), "diffuseTex"), 0);
-    //glActiveTexture(GL_TEXTURE0);
-    //glBindTexture(GL_TEXTURE_2D, earthTex);
-
-    //glUniform1i(glGetUniformLocation(lightShader->GetProgram(), "bumpTex"), 1);
-    //glActiveTexture(GL_TEXTURE1);
-    //glBindTexture(GL_TEXTURE_2D, earthBump);
-
-    //modelMatrix.ToIdentity(); // New!
-    //textureMatrix.ToIdentity(); // New!
-
-    //UpdateShaderMatrices();
-
-    //heightMap->Draw();
-}
 
 void Renderer::DrawMainScene() {
     BindShader(sceneShader);
-    SetShaderLight(*mainLight);
+    SetShaderLight(*sideLight);
     viewMatrix = camera->BuildViewMatrix();
     projMatrix = Matrix4::Perspective(1.0f, 15000.0f,
         (float)width / (float)height, 45.0f);

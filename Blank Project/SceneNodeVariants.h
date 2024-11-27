@@ -37,3 +37,19 @@ protected:
     Light* light;
     Camera* camera;
 };
+
+
+class WaterNode : public SceneNode {
+public:
+    void Draw(OGLRenderer& r) override;
+    void SetCamera(Camera* c) { camera = c; }
+    void SetWaterTex(GLuint w) { waterTex = w; }
+    void SetCubeMap(GLuint c) { cubeMap = c; }
+    void SetHSize(Vector3 h) { hSize = h; }
+
+protected:
+    Camera* camera;
+    GLuint waterTex;
+    GLuint cubeMap;
+    Vector3 hSize;
+};
