@@ -55,6 +55,9 @@ void WaterNode::Draw(OGLRenderer& r) {
     glUniform1i(glGetUniformLocation(shader->GetProgram(), "diffuseTex"), 0);
     glUniform1i(glGetUniformLocation(shader->GetProgram(), "cubeTex"), 2);
 
+    float col[4] = { 1.0f, 0.5f,0.3f,.5f};
+    glUniform4fv(glGetUniformLocation(shader->GetProgram(), "waterColour"), 1, col);
+
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, waterTex);
 

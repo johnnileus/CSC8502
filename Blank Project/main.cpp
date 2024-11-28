@@ -1,5 +1,11 @@
 #include "../NCLGL/window.h"
 #include "Renderer.h"
+//switch gpu to nvidia
+//extern "C" {
+//	_declspec(dllexport)DWORD NvOptimusEnablement = 0x00000001;
+//}
+
+float fpsDelay = 0.0f;
 
 int main() {
 	Window w("project", 1280, 720, false); //This is all boring win32 window creation stuff!
@@ -16,7 +22,14 @@ int main() {
 	w.ShowOSPointer(false);
 
 	while (w.UpdateWindow() && !Window::GetKeyboard()->KeyDown(KEYBOARD_ESCAPE)) {
-		renderer.UpdateScene(w.GetTimer()->GetTimeDeltaSeconds());
+		float dt = w.GetTimer()->GetTimeDeltaSeconds();
+		fpsDelay += dt;
+		if (fpsDelay > .08f) {
+			w.SetTitle("fps: " + std::to_string(1 / dt));
+			fpsDelay = 0;
+
+		}
+		renderer.UpdateScene(dt);
 		renderer.RenderScene();
 		renderer.SwapBuffers();
 		if (Window::GetKeyboard()->KeyDown(KEYBOARD_F5)) {

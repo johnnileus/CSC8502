@@ -41,6 +41,11 @@ protected:
 
 class WaterNode : public SceneNode {
 public:
+    WaterNode(Mesh* m = NULL, Vector4 col = Vector4(1.0f, 0.0f, 0.0f, 1.0f)) : SceneNode(m, col) {
+        drawable = true;
+        colour = col;
+    }
+
     void Draw(OGLRenderer& r) override;
     void SetCamera(Camera* c) { camera = c; }
     void SetWaterTex(GLuint w) { waterTex = w; }

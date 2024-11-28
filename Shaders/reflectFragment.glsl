@@ -1,6 +1,7 @@
 #version 330 core
 uniform sampler2D diffuseTex;
 uniform samplerCube cubeTex;
+uniform vec4 waterColour;
 
 uniform vec3 cameraPos;
 
@@ -21,5 +22,5 @@ void main(void) {
 	vec4 reflectTex = texture(cubeTex, reflectDir);
 
 	fragColour = reflectTex + (diffuse * 0.25f);
-	fragColour.a *= 0.1f;
+	fragColour *= waterColour;
 }

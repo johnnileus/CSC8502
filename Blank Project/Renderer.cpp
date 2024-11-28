@@ -102,16 +102,16 @@ Renderer::Renderer(Window& parent) : OGLRenderer(parent) {
     map->SetShader(lightShader);
     map->drawable = true;
 
-    WaterNode* water = new WaterNode();
-    water->SetColour({ 1.0f,1.0f,1.0f,0.5f });
+    WaterNode* water = new WaterNode(quad);
     water->drawable = true;
     water->SetShader(reflectShader);
     water->SetCamera(camera);
-    water->SetMesh(quad);
     water->SetWaterTex(waterTex);
     water->SetCubeMap(cubeMap);
+    water->SetBoundingRadius(10000.0f);
 
     water->SetHSize(map->heightMap->GetHeightmapSize());
+    root->AddChild(water);
 
     root->AddChild(map);
     for (int i = 0; i < 5; ++i) {
@@ -218,7 +218,7 @@ void Renderer::RenderScene() {
     DrawNodes();
     ClearNodeLists();
 
-    DrawWater();
+    //DrawWater();
 
     DrawShadowScene();
     DrawMainScene();
@@ -309,6 +309,8 @@ void Renderer::BuildNodeLists(SceneNode* from) {
 void Renderer::SortNodeLists() {
     std::sort(transparentNodeList.rbegin(), transparentNodeList.rend(), SceneNode::CompareByCameraDistance);
     std::sort(nodeList.begin(), nodeList.end(), SceneNode::CompareByCameraDistance);
+    int a = transparentNodeList.size();
+    int b = nodeList.size();
 }
 
 void Renderer::DrawNodes() {
