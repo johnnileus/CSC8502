@@ -22,12 +22,25 @@ Features to do:
  - import a mesh
  - particle system
  - fog
+ x terrain texturing based on normal
+ - skeletal animation
+ - procedural generation
+ - colour grading
 
+ - blur -> bloom
+ - fog
+ - colour grading
+ - import tree mesh, place randomly on terrain
+ - camera rail
+ - particle system
+  
 
 
 
  Features implemented:
-  - Shadow mapping
+  - Real-time Shadow mapping
   - Skybox
   - Terrain
+  - Terrain texturing based on normals
+  - terrain bump maps
   - Fun water shader

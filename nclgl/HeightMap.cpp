@@ -1,7 +1,7 @@
 #include "HeightMap.h"
 #include <iostream>
 
-HeightMap::HeightMap(const std::string& name) {
+HeightMap::HeightMap(bool procedural, const std::string& name) {
     int iWidth, iHeight, iChans;
     unsigned char* data = SOIL_load_image(name.c_str(), &iWidth, &iHeight, &iChans, 1);
     if (!data) {
@@ -16,7 +16,7 @@ HeightMap::HeightMap(const std::string& name) {
     indices = new GLuint[numIndices];
 
 
-    Vector3 vertexScale = Vector3(16.0f, 1.0f, 16.0f);
+    Vector3 vertexScale = Vector3(16.0f, 5.0f, 16.0f);
     Vector2 textureScale = Vector2(1 / 16.0f, 1 / 16.0f);
 
     for (int z = 0; z < iHeight; ++z) {

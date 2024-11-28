@@ -24,16 +24,24 @@ public:
 
     HeightMap* heightMap;
 
-    void SetEarthTex(GLuint tex) { earthTex = tex; if (!earthTex) {return;}}
+    void SetEarthTex(GLuint tex) { earthTex = tex; if (!earthTex) { return; } }
     GLuint GetEarthTex() { return earthTex; }
-    void SetEarthBump(GLuint tex) { earthBump = tex; if (!earthBump) { return; }}
+    void SetEarthBump(GLuint tex) { earthBump = tex; if (!earthBump) { return; } }
     GLuint GetEarthBump() { return earthBump; }
+
+    void SetGrassTex(GLuint tex) { grassTex = tex; if (!grassTex) { return; } }
+    GLuint GetGrassTex() { return grassTex; }
+    void SetGrassBump(GLuint tex) { grassBump = tex; if (!grassBump) { return; } }
+    GLuint GetGrassBump() { return grassBump; }
+
     void SetMainLight(Light* l) { light = l; }
     void SetCamera(Camera* c) { camera = c; }
 
 protected:
     GLuint earthTex;
     GLuint earthBump;
+    GLuint grassTex;
+    GLuint grassBump;
     Light* light;
     Camera* camera;
 };
@@ -49,12 +57,15 @@ public:
     void Draw(OGLRenderer& r) override;
     void SetCamera(Camera* c) { camera = c; }
     void SetWaterTex(GLuint w) { waterTex = w; }
+    void SetBumpTex(GLuint w) { bumpTex = w; }
+
     void SetCubeMap(GLuint c) { cubeMap = c; }
     void SetHSize(Vector3 h) { hSize = h; }
 
 protected:
     Camera* camera;
     GLuint waterTex;
+    GLuint bumpTex;
     GLuint cubeMap;
     Vector3 hSize;
 };

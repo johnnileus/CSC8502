@@ -39,6 +39,17 @@ void HeightMapNode::Draw(OGLRenderer& r) {
     glActiveTexture(GL_TEXTURE1);
     glBindTexture(GL_TEXTURE_2D, earthBump);
 
+    // Bind grass texture
+    glUniform1i(glGetUniformLocation(shader->GetProgram(), "grassTex"), 2);
+    glActiveTexture(GL_TEXTURE2);
+    glBindTexture(GL_TEXTURE_2D, grassTex);
+
+    // Bind grass bump map
+    glUniform1i(glGetUniformLocation(shader->GetProgram(), "grassBump"), 3);
+    glActiveTexture(GL_TEXTURE3);
+    glBindTexture(GL_TEXTURE_2D, grassBump);
+
+
     render.modelMatrix = Matrix4::Translation(Vector3(0,0,0)) *
         Matrix4::Scale(modelScale) *
         Matrix4::Rotation(0, Vector3(1, 0, 0));
@@ -56,6 +67,7 @@ void WaterNode::Draw(OGLRenderer& r) {
 
     glUniform1i(glGetUniformLocation(shader->GetProgram(), "diffuseTex"), 0);
     glUniform1i(glGetUniformLocation(shader->GetProgram(), "cubeTex"), 2);
+    glUniform1i(glGetUniformLocation(shader->GetProgram(), "bumpTex"), 3);
 
     float col[4] = { 1.0f, 0.5f,0.3f,.5f};
     glUniform4fv(glGetUniformLocation(shader->GetProgram(), "waterColour"), 1, col);
@@ -65,8 +77,13 @@ void WaterNode::Draw(OGLRenderer& r) {
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, waterTex);
 
+
     glActiveTexture(GL_TEXTURE2);
     glBindTexture(GL_TEXTURE_CUBE_MAP, cubeMap);
+
+
+    glActiveTexture(GL_TEXTURE3);
+    glBindTexture(GL_TEXTURE_2D, bumpTex);
 
     r.modelMatrix =
         Matrix4::Translation(hSize * 0.5f) *

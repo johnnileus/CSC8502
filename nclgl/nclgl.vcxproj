@@ -65,6 +65,7 @@
     <ClInclude Include="Quaternion.h" />
     <ClInclude Include="SceneNode.h" />
     <ClInclude Include="Shader.h" />
+    <ClInclude Include="stb_perlin.h" />
     <ClInclude Include="Vector2.h" />
     <ClInclude Include="Vector3.h" />
     <ClInclude Include="Vector4.h" />

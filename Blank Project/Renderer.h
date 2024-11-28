@@ -38,6 +38,8 @@ protected:
     GLuint shadowTex;
     GLuint shadowFBO;
 
+    //GLuint depthTex;
+    //GLuint depthTexFBO;
 
     GLuint sceneDiffuse;
     GLuint sceneBump;

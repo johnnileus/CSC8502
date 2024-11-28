@@ -26,7 +26,7 @@ Renderer::Renderer(Window& parent) : OGLRenderer(parent) {
 
 
     map = new HeightMapNode();
-    map->heightMap = new HeightMap(TEXTUREDIR "noise.png");
+    map->heightMap = new HeightMap(false, TEXTUREDIR "noise.png");
     Vector3 heightmapSize = map->heightMap->GetHeightmapSize();
 
 
@@ -49,12 +49,22 @@ Renderer::Renderer(Window& parent) : OGLRenderer(parent) {
     map->SetEarthTex(SOIL_load_OGL_texture(TEXTUREDIR "Barren Reds.JPG", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS));
     map->SetEarthBump(SOIL_load_OGL_texture(TEXTUREDIR "Barren RedsDOT3.JPG", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS));
 
+    map->SetGrassTex(SOIL_load_OGL_texture(TEXTUREDIR "Grass_01.png", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS));
+    map->SetGrassBump(SOIL_load_OGL_texture(TEXTUREDIR "Grass_01_Nrm.png", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS));
+
+
+
     waterTex = SOIL_load_OGL_texture(
-        TEXTUREDIR "water.TGA", SOIL_LOAD_AUTO,
+        TEXTUREDIR "Water 0339.jpg", SOIL_LOAD_AUTO,
         SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS
     );
 
-    if (!cubeMap || !waterTex) {
+    GLuint waterBump = SOIL_load_OGL_texture(
+        TEXTUREDIR "Water 0339normal.jpg", SOIL_LOAD_AUTO,
+        SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS
+    );
+
+    if (!cubeMap || !waterTex || !waterBump) {
         return;
     }
 
@@ -108,6 +118,7 @@ Renderer::Renderer(Window& parent) : OGLRenderer(parent) {
     water->SetShader(reflectShader);
     water->SetCamera(camera);
     water->SetWaterTex(waterTex);
+    water->SetBumpTex(waterBump);
     water->SetCubeMap(cubeMap);
     water->SetBoundingRadius(10000.0f);
 
@@ -130,7 +141,7 @@ Renderer::Renderer(Window& parent) : OGLRenderer(parent) {
         root->AddChild(s);
     }
 
-
+    //shadow tex
     glGenTextures(1, &shadowTex);
     glBindTexture(GL_TEXTURE_2D, shadowTex);
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);

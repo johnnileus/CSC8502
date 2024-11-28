@@ -89,6 +89,7 @@
     <ClInclude Include="Frustum.h" />
     <ClInclude Include="HeightMap.h" />
     <ClInclude Include="Light.h" />
+    <ClInclude Include="stb_perlin.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="GLAD">
