@@ -48,6 +48,8 @@ void SceneNode::Update(float dt) {
         worldTransform = transform;
     }
 
+    //create function to update nodes
+
     for (vector<SceneNode*>::iterator i = children.begin(); i != children.end(); ++i) {
         (*i)->Update(dt);
     }

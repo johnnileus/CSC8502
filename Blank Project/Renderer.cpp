@@ -35,8 +35,8 @@ Renderer::Renderer(Window& parent) : OGLRenderer(parent) {
     map->SetCamera(camera);
 
     mainLight = new Light(
-        heightmapSize * Vector3(0.5f, 1.5f, 0.5f),
-        Vector4(1, 1, 1, 1), heightmapSize.x
+        heightmapSize * Vector3(0.5f, 5.5f, 0.5f),
+        Vector4(1, 1, 1, 1), heightmapSize.x * 5
     );
 
     sideLight = new Light(Vector3(-20.0f, 10.0f, -20.0f), Vector4(1, 1, 1, 1), 250.0f);
@@ -88,6 +88,7 @@ Renderer::Renderer(Window& parent) : OGLRenderer(parent) {
         !testPlaneShader -> LoadSuccess() ||
         !reflectShader -> LoadSuccess() ||
         !defaultShader->LoadSuccess()) {
+        std::cout << "bwuh";
         return;
     }
 
@@ -96,7 +97,7 @@ Renderer::Renderer(Window& parent) : OGLRenderer(parent) {
     //Generate objects
     //root->AddChild(new CubeRobot(cube, testPlaneShader));
     map->SetBoundingRadius(100000.0f);
-    map->SetModelScale({ 100.0f,100.0f,100.0f });
+    map->SetModelScale({ 1.0f,1.0f,1.0f });
     map->SetTransform(Matrix4::Translation(Vector3(0, 0, 0)));
     map->SetColour({ 0, 0, 0, 1 });
     map->SetShader(lightShader);
@@ -111,9 +112,11 @@ Renderer::Renderer(Window& parent) : OGLRenderer(parent) {
     water->SetBoundingRadius(10000.0f);
 
     water->SetHSize(map->heightMap->GetHeightmapSize());
-    root->AddChild(water);
 
+
+    root->AddChild(water);
     root->AddChild(map);
+
     for (int i = 0; i < 5; ++i) {
         SceneNode* s = new TestPlane();
         s->SetColour(Vector4(1.0f, 1.0f, 1.0f, 0.5f));
@@ -126,7 +129,6 @@ Renderer::Renderer(Window& parent) : OGLRenderer(parent) {
         s->SetShader(testPlaneShader);
         root->AddChild(s);
     }
-
 
 
     glGenTextures(1, &shadowTex);
@@ -147,6 +149,8 @@ Renderer::Renderer(Window& parent) : OGLRenderer(parent) {
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, shadowTex, 0);
     glDrawBuffer(GL_NONE);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+
     sceneMeshes.emplace_back(Mesh::GenerateQuad());
     sceneMeshes.emplace_back(Mesh::LoadFromMeshFile("Sphere.msh"));
     sceneMeshes.emplace_back(Mesh::LoadFromMeshFile("Cylinder.msh"));
@@ -191,6 +195,7 @@ void Renderer::UpdateScene(float dt) {
 
     viewMatrix = camera->BuildViewMatrix();
     frameFrustum.FromMatrix(projMatrix * viewMatrix);
+
 
     root->Update(dt);
 
@@ -335,7 +340,7 @@ void Renderer::DrawMainScene() {
     BindShader(sceneShader);
     SetShaderLight(*sideLight);
     viewMatrix = camera->BuildViewMatrix();
-    projMatrix = Matrix4::Perspective(1.0f, 15000.0f,
+    projMatrix = Matrix4::Perspective(1.0f, 150000.0f,
         (float)width / (float)height, 45.0f);
 
     glUniform1i(glGetUniformLocation(sceneShader->GetProgram(), "diffuseTex"), 0);

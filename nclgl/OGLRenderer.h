@@ -70,6 +70,10 @@ public:
 	Matrix4 textureMatrix;	//Texture matrix
 	Matrix4 shadowMatrix;
 
+
+	void SetTime(float t) { currentTime = t; }
+	float GetTime() { return currentTime; }
+
 protected:
 	virtual void	Resize(int x, int y);	
 
@@ -82,6 +86,7 @@ protected:
 	}
 	void SetTextureRepeating(GLuint target, bool state);
 
+	float currentTime;
 
 
 	int		width;			//Render area width (not quite the same as window width)

@@ -75,7 +75,7 @@ bool	Shader::LoadShaderFile(const string& filename, string &into)	{
 		getline(file,textLine);
 		textLine += "\n";
 		into += textLine;
-		cout << "(" << lineNum << ") :" << textLine;
+		//cout << "(" << lineNum << ") :" << textLine;
 		++lineNum;
 	}
 	cout << "\nLoaded shader text!\n\n";

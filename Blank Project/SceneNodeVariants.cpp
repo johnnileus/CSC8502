@@ -39,7 +39,9 @@ void HeightMapNode::Draw(OGLRenderer& r) {
     glActiveTexture(GL_TEXTURE1);
     glBindTexture(GL_TEXTURE_2D, earthBump);
 
-    render.modelMatrix.ToIdentity(); // New!
+    render.modelMatrix = Matrix4::Translation(Vector3(0,0,0)) *
+        Matrix4::Scale(modelScale) *
+        Matrix4::Rotation(0, Vector3(1, 0, 0));
     render.textureMatrix.ToIdentity(); // New!
 
     render.UpdateShaderMatrices();
@@ -57,6 +59,8 @@ void WaterNode::Draw(OGLRenderer& r) {
 
     float col[4] = { 1.0f, 0.5f,0.3f,.5f};
     glUniform4fv(glGetUniformLocation(shader->GetProgram(), "waterColour"), 1, col);
+
+    glUniform1f(glGetUniformLocation(shader->GetProgram(), "time"), r.GetTime());
 
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, waterTex);

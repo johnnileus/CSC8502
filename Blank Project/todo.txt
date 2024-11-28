@@ -1,10 +1,10 @@
 Features complete:
  - Core Features:
-  - Landscape
-  - Lit by light source
-  - Environment mapping (water)
+  x Landscape
+  x Lit by light source
+  x Environment mapping (water)
   - Automatic Camera movement
-  - Scene Graph
+  x Scene Graph
   - Simple meshes combined into additional scene elements
  - Advanced Features:
   - Post processing effects
@@ -17,6 +17,12 @@ Features complete:
 Features to do:
  - Portal
  - Lens flare/bloom
+ x wavy water
+ - camera rail
+ - import a mesh
+ - particle system
+ - fog
+
 
 
 
@@ -24,3 +30,4 @@ Features to do:
   - Shadow mapping
   - Skybox
   - Terrain
+  - Fun water shader

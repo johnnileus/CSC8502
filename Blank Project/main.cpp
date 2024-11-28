@@ -10,11 +10,15 @@ float fpsDelay = 0.0f;
 int main() {
 	Window w("project", 1280, 720, false); //This is all boring win32 window creation stuff!
 	if (!w.HasInitialised()) {
+		char a;
+		std::cin >> a;
 		return -1;
 	}
 
 	Renderer renderer(w); //This handles all the boring OGL 3.2 initialisation stuff, and sets up our tutorial!
 	if (!renderer.HasInitialised()) {
+		char a;
+		std::cin >> a;
 		return -1;
 	}
 
@@ -32,6 +36,7 @@ int main() {
 		renderer.UpdateScene(dt);
 		renderer.RenderScene();
 		renderer.SwapBuffers();
+		renderer.SetTime(w.GetTimer()->GetTotalTimeMSec());
 		if (Window::GetKeyboard()->KeyDown(KEYBOARD_F5)) {
 			Shader::ReloadAllShaders();
 		}

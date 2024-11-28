@@ -41,7 +41,7 @@ protected:
 
 class WaterNode : public SceneNode {
 public:
-    WaterNode(Mesh* m = NULL, Vector4 col = Vector4(1.0f, 0.0f, 0.0f, 1.0f)) : SceneNode(m, col) {
+    WaterNode(Mesh* m = NULL, Vector4 col = Vector4(1.0f, 0.0f, 0.0f, .5f)) : SceneNode(m, col) {
         drawable = true;
         colour = col;
     }

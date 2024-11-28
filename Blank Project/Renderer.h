@@ -20,6 +20,7 @@ public:
     void UpdateScene(float dt) override;
     void RenderScene() override;
 
+
 protected:
 
     void BuildNodeLists(SceneNode* from);
