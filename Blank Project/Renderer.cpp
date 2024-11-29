@@ -95,6 +95,9 @@ Renderer::Renderer(Window& parent) : OGLRenderer(parent) {
     );
 
     fullScreenShader = new Shader("postProcessQuad.vert", "postProcessQuad.frag");
+    blurShader = new Shader("postProcessQuad.vert", "processfrag.glsl");
+
+    robotShader = new Shader("SkinningVertex.glsl", "texturedFragment.glsl");
 
     Shader* defaultShader = new Shader("defaultVertex.glsl", "defaultFrag.glsl");
 
@@ -106,7 +109,8 @@ Renderer::Renderer(Window& parent) : OGLRenderer(parent) {
         !testPlaneShader -> LoadSuccess() ||
         !reflectShader -> LoadSuccess() ||
         !fullScreenShader -> LoadSuccess() ||
-        !defaultShader->LoadSuccess()) {
+        !defaultShader->LoadSuccess() || 
+        !blurShader->LoadSuccess()) {
         std::cout << "bwuh";
         return;
     }
@@ -115,6 +119,26 @@ Renderer::Renderer(Window& parent) : OGLRenderer(parent) {
 
     //Generate objects
     //root->AddChild(new CubeRobot(cube, testPlaneShader));
+
+    robot = new RobotNode(Mesh::LoadFromMeshFile("Role_T.msh"));
+    robot->meshAnim = new MeshAnimation("Role_T.anm");
+    robot->meshMat = new MeshMaterial("Role_T.mat");
+    robot->SetShader(robotShader);
+    robot->SetBoundingRadius(100000.0f);
+    robot->SetColour({0,0,0,1});
+    procMap->drawable = true;
+    for (int i = 0; i < robot->GetMesh()->GetSubMeshCount(); ++i) {
+        const MeshMaterialEntry* matEntry = robot->meshMat->GetMaterialForLayer(i);
+
+        const string* filename = nullptr;
+        matEntry->GetEntry("Diffuse", &filename);
+        string path = TEXTUREDIR + *filename;
+        GLuint texID = SOIL_load_OGL_texture(path.c_str(), SOIL_LOAD_AUTO,
+            SOIL_CREATE_NEW_ID,
+            SOIL_FLAG_MIPMAPS | SOIL_FLAG_INVERT_Y);
+        robot->matTextures.emplace_back(texID);
+    }
+    
 
     procMap->SetCamera(camera);
     procMap->SetMainLight(mainLight);
@@ -150,6 +174,7 @@ Renderer::Renderer(Window& parent) : OGLRenderer(parent) {
     root->AddChild(water);
     root->AddChild(map);
     root->AddChild(procMap);
+    root->AddChild(robot);
 
     for (int i = 0; i < 5; ++i) {
         SceneNode* s = new TestPlane();
@@ -267,7 +292,14 @@ void Renderer::UpdateScene(float dt) {
 
     viewMatrix = camera->BuildViewMatrix();
     frameFrustum.FromMatrix(projMatrix * viewMatrix);
+    camera->UpdateCamera(dt, GetTime());
+    viewMatrix = camera->BuildViewMatrix();
 
+    robot->frameTime -= dt;
+    while (robot->frameTime < 0.0f) {
+        robot->currentFrame = (robot->currentFrame + 1) % robot->meshAnim->GetFrameCount();
+        robot->frameTime += 1.0f / robot->meshAnim->GetFrameRate();
+    }
 
     root->Update(dt);
 
@@ -280,6 +312,21 @@ void Renderer::UpdateScene(float dt) {
 
 void Renderer::RenderScene() {
     
+    if (Window::GetKeyboard()->KeyTriggered(KEYBOARD_R)) {
+        enableFog = !enableFog;
+    }
+    if (Window::GetKeyboard()->KeyTriggered(KEYBOARD_Y)) {
+        enableBlur = !enableBlur;
+    }
+    if (Window::GetKeyboard()->KeyTriggered(KEYBOARD_T)) {
+        enableBloom = !enableBloom;
+    }
+    if (Window::GetKeyboard()->KeyTriggered(KEYBOARD_U)) {
+        enableRotating = !enableRotating;
+    }
+
+
+
     glBindFramebuffer(GL_FRAMEBUFFER, bufferFBO);
     BuildNodeLists(root);
     SortNodeLists();
@@ -318,6 +365,8 @@ void Renderer::RenderScene() {
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, bufferColourTex[0]);
     glUniform1i(glGetUniformLocation(fullScreenShader->GetProgram(), "sceneTex"), 0);
+   
+    glUniform1i(glGetUniformLocation(fullScreenShader->GetProgram(), "enableFog"), enableFog);
 
     glActiveTexture(GL_TEXTURE1);
     glBindTexture(GL_TEXTURE_2D, depthTex);
@@ -425,11 +474,11 @@ void Renderer::DrawNodes() {
     for (const auto& i : nodeList) {
         DrawNode(i);
     }
-    glDepthMask(GL_FALSE);
+    //glDepthMask(GL_FALSE);
     for (const auto& i : transparentNodeList) {
         DrawNode(i);
     }
-    glDepthMask(GL_TRUE);
+    //glDepthMask(GL_TRUE);
 }
 
 void Renderer::DrawNode(SceneNode* n) {

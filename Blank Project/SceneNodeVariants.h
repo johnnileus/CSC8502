@@ -3,7 +3,8 @@
 #include "../nclgl/OGLRenderer.h"
 #include "../nclgl/Heightmap.h"
 #include "../nclgl/Camera.h"
-
+#include "../nclgl/MeshAnimation.h"
+#include "../nclgl/MeshMaterial.h"
 
 class TestPlane : public SceneNode {
 public:
@@ -68,4 +69,30 @@ protected:
     GLuint bumpTex;
     GLuint cubeMap;
     Vector3 hSize;
+};
+
+
+class RobotNode : public SceneNode {
+public:
+    RobotNode(Mesh* m = NULL, Vector4 col = Vector4(1.0f, 0.0f, 0.0f, .5f)) : SceneNode(m, col) {
+        drawable = true;
+        colour = col;
+
+      
+
+    }
+
+    void Draw(OGLRenderer& r) override;
+
+
+
+    int currentFrame = 0;
+    float frameTime = 0.0f;
+    MeshAnimation* meshAnim;
+    MeshMaterial* meshMat;
+    vector<GLuint> matTextures;
+
+
+protected:
+
 };

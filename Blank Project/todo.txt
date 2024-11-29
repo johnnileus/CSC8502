@@ -21,10 +21,10 @@ Features to do:
  - camera rail
  - import a mesh
  - particle system
- - fog
+ x fog
  x terrain texturing based on normal
  - skeletal animation
- - procedural generation
+ x procedural generation
  - colour grading
 
 
@@ -40,3 +40,7 @@ Features to do:
    - scrolling bump map
    - real-time sine waves!!!
    - reflects skybox
+  - fog!
+  - robot
+  - procedural terrain
+

@@ -42,8 +42,8 @@ float calculateAmp(vec3 pos, int amt) {
 	float timeFactor = time * 0.004;
 	for (int i = 0; i < amt; i++) {
 		float dir = radians(rand(i) * 25);
-		float frequency = float(i*0.2 + 1) * 0.5;
-		float amplitude = 1.0 / (i*.2 + 1);
+		float frequency = float(i*0.05 + 1) * 0.25;
+		float amplitude = 1.0 / (i*.02 + 1);
 		vec3 rotated = rotatePos(pos, dir);
 		amp += sin(rotated.x * frequency + timeFactor) * amplitude / 5;
 	}
@@ -52,9 +52,9 @@ float calculateAmp(vec3 pos, int amt) {
 }
 
 void main(void) {
-	vec4 diffuse = texture(diffuseTex, IN.texCoord * 10 + time * 0.0001);
+	vec4 diffuse = texture(diffuseTex, IN.texCoord * 100 + time * 0.000001);
 	vec3 viewDir = normalize(cameraPos - IN.worldPos);
-	vec3 bumpSample = texture(bumpTex, IN.texCoord * 10 + time * 0.0001).rgb;
+	vec3 bumpSample = texture(bumpTex, IN.texCoord * 100 + time * 0.000001).rgb;
 
 	vec3 tangentNormal = bumpSample * 2.0 - 1.0;
 

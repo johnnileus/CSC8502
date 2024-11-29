@@ -2,7 +2,7 @@
 #include "Window.h"
 #include <algorithm>
 
-void Camera::UpdateCamera(float dt) {
+void Camera::UpdateCamera(float dt, float ct) {
     pitch -= (Window::GetMouse()->GetRelativePosition().y);
     yaw -= (Window::GetMouse()->GetRelativePosition().x);
 
@@ -41,6 +41,8 @@ void Camera::UpdateCamera(float dt) {
     if (Window::GetKeyboard()->KeyDown(KEYBOARD_SHIFT)) {
         position += up * -speed;
     }
+
+    
 }
 
 Matrix4 Camera::BuildViewMatrix() {

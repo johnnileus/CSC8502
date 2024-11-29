@@ -11,9 +11,9 @@ Renderer::Renderer(Window& parent) : OGLRenderer(parent) {
         SOIL_FLAG_MIPMAPS);
 
     sceneShader = new Shader("TexturedVertex.glsl", "TexturedFragment.glsl");
-    processShader = new Shader("TexturedVertex.glsl", "processfrag.glsl");
+    blurShader = new Shader("TexturedVertex.glsl", "processfrag.glsl");
 
-    if (!processShader->LoadSuccess() || !sceneShader->LoadSuccess() || !heightTexture) {
+    if (!blurShader->LoadSuccess() || !sceneShader->LoadSuccess() || !heightTexture) {
         return;
     }
 
@@ -64,7 +64,7 @@ Renderer::Renderer(Window& parent) : OGLRenderer(parent) {
 
 Renderer::~Renderer(void) {
     delete sceneShader;
-    delete processShader;
+    delete blurShader;
     delete heightMap;
     delete quad;
     delete camera;
@@ -108,7 +108,7 @@ void Renderer::DrawPostProcess() {
         GL_TEXTURE_2D, bufferColourTex[1], 0);
     glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
 
-    BindShader(processShader);
+    BindShader(blurShader);
     modelMatrix.ToIdentity();
     viewMatrix.ToIdentity();
     projMatrix.ToIdentity();
@@ -117,17 +117,17 @@ void Renderer::DrawPostProcess() {
     glDisable(GL_DEPTH_TEST);
 
     glActiveTexture(GL_TEXTURE0);
-    glUniform1i(glGetUniformLocation(processShader->GetProgram(), "sceneTex"), 0);
+    glUniform1i(glGetUniformLocation(blurShader->GetProgram(), "sceneTex"), 0);
     for (int i = 0; i < POST_PASSES; ++i) {
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
             GL_TEXTURE_2D, bufferColourTex[1], 0);
-        glUniform1i(glGetUniformLocation(processShader->GetProgram(), "isVertical"), 0);
+        glUniform1i(glGetUniformLocation(blurShader->GetProgram(), "isVertical"), 0);
 
         glBindTexture(GL_TEXTURE_2D, bufferColourTex[0]);
         quad->Draw();
 
         // Now to swap the colour buffers, and do the second blur pass
-        glUniform1i(glGetUniformLocation(processShader->GetProgram(), "isVertical"), 1);
+        glUniform1i(glGetUniformLocation(blurShader->GetProgram(), "isVertical"), 1);
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
             GL_TEXTURE_2D, bufferColourTex[0], 0);
         glBindTexture(GL_TEXTURE_2D, bufferColourTex[1]);

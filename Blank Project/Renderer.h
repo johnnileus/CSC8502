@@ -55,6 +55,8 @@ protected:
     Shader* lightShader;
     Shader* reflectShader;
     Shader* fullScreenShader;
+    Shader* blurShader;
+    Shader* robotShader;
 
     vector<Mesh*> sceneMeshes;
     vector<Matrix4> sceneTransforms;
@@ -71,6 +73,7 @@ protected:
     GLuint cubeMap;
     GLuint waterTex;
 
+    RobotNode* robot;
 
     SceneNode* root;
     Mesh* quad;
@@ -85,5 +88,13 @@ protected:
 
     vector<SceneNode*> transparentNodeList;
     vector<SceneNode*> nodeList;
+
+    bool enableFog;
+    bool enableBlur;
+    bool enableBloom;
+    bool enableRotating;
+
+
+
 
 };

@@ -83,7 +83,7 @@ void WaterNode::Draw(OGLRenderer& r) {
 
     r.modelMatrix =
         Matrix4::Translation(Vector3(0,600.0f,0)) *
-        Matrix4::Scale(hSize * 0.5f) *
+        Matrix4::Scale(hSize * 5.5f) *
         Matrix4::Rotation(90, Vector3(1, 0, 0));
 
     r.textureMatrix =
@@ -95,4 +95,28 @@ void WaterNode::Draw(OGLRenderer& r) {
     // SetShaderLight(*light); // No lighting in this shader!
     mesh->Draw();
     r.textureMatrix.ToIdentity();
+}
+
+void RobotNode::Draw(OGLRenderer& r) {
+
+    r.BindShader(shader);
+    glUniform1i(glGetUniformLocation(shader->GetProgram(), "diffuseTex"), 0);
+    r.UpdateShaderMatrices();
+    vector<Matrix4> frameMatrices;
+
+    const Matrix4* invBindPose = mesh->GetInverseBindPose();
+    const Matrix4* frameData = meshAnim->GetJointData(currentFrame);
+
+    for (unsigned int i = 0; i < mesh->GetJointCount(); ++i) {
+        frameMatrices.emplace_back(frameData[i] * invBindPose[i]);
+    }
+
+    int j = glGetUniformLocation(shader->GetProgram(), "joints");
+    glUniformMatrix4fv(j, frameMatrices.size(), false,
+        (float*)frameMatrices.data());
+    for (int i = 0; i < mesh->GetSubMeshCount(); ++i) {
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, matTextures[i]);
+        mesh->DrawSubMesh(i);
+    }
 }

@@ -18,7 +18,7 @@ protected:
     void DrawScene();
 
     Shader* sceneShader;
-    Shader* processShader;
+    Shader* blurShader;
 
     Camera* camera;
 

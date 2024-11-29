@@ -34,6 +34,10 @@ public:
 		y = 0.0f;
 	}
 
+	float GetDistToOrigin() {
+		return std::sqrt(x * x + y * y);
+	}
+
 	inline friend std::ostream& operator<<(std::ostream& o, const Vector2& v){
 		o << "Vector2(" << v.x << "," << v.y << ")" << std::endl;
 		return o;
