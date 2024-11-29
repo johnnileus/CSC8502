@@ -69,7 +69,7 @@ void main(void) {
 	vec3 reflectDir = reflect(-viewDir, perturbedNormal);
 	vec4 reflectTex = texture(cubeTex, reflectDir);
 
-	fragColour = reflectTex + (diffuse * 0.25);
+	fragColour = reflectTex + (diffuse * 0.3);
 	fragColour *= waterColour;
 	//float depth; fragColour = vec4((lineariseDepth(gl_FragCoord.z) / far).rrr, 1.0);
 

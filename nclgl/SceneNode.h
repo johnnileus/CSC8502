@@ -72,11 +72,8 @@ protected:
     Vector4 colour;
     std::vector<SceneNode*> children;
 
-
     inline static Shader* defaultShader;
     
-    
-
     float distanceFromCamera;
     float boundingRadius;
     GLuint texture;

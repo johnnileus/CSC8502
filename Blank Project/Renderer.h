@@ -38,8 +38,12 @@ protected:
     GLuint shadowTex;
     GLuint shadowFBO;
 
-    //GLuint depthTex;
-    //GLuint depthTexFBO;
+    GLuint depthTex;
+    GLuint depthTexFBO;
+
+    GLuint bufferColourTex[2];
+    GLuint bufferFBO;
+    GLuint processFBO;
 
     GLuint sceneDiffuse;
     GLuint sceneBump;
@@ -50,12 +54,14 @@ protected:
     Shader* skyboxShader;
     Shader* lightShader;
     Shader* reflectShader;
+    Shader* fullScreenShader;
 
     vector<Mesh*> sceneMeshes;
     vector<Matrix4> sceneTransforms;
 
     HeightMap* heightMap;
     HeightMapNode* map;
+    HeightMapNode* procMap;
     Mesh* skyboxQuad;
 
     Camera* camera;

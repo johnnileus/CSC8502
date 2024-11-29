@@ -2,6 +2,13 @@
 #include <iostream>
 
 HeightMap::HeightMap(bool procedural, const std::string& name) {
+    if (procedural) {
+
+    }
+    else {
+
+    }
+
     int iWidth, iHeight, iChans;
     unsigned char* data = SOIL_load_image(name.c_str(), &iWidth, &iHeight, &iChans, 1);
     if (!data) {
@@ -15,8 +22,14 @@ HeightMap::HeightMap(bool procedural, const std::string& name) {
     textureCoords = new Vector2[numVertices];
     indices = new GLuint[numIndices];
 
+    Vector3 vertexScale;
+    if (procedural) {
+        vertexScale = Vector3(360.0f, 15.0f, 360.0f);
+    }
+    else {
+        vertexScale = Vector3(16.0f, 5.0f, 16.0f);
+    }
 
-    Vector3 vertexScale = Vector3(16.0f, 5.0f, 16.0f);
     Vector2 textureScale = Vector2(1 / 16.0f, 1 / 16.0f);
 
     for (int z = 0; z < iHeight; ++z) {

@@ -27,13 +27,6 @@ Features to do:
  - procedural generation
  - colour grading
 
- - blur -> bloom
- - fog
- - colour grading
- - import tree mesh, place randomly on terrain
- - camera rail
- - particle system
-  
 
 
 
@@ -43,4 +36,7 @@ Features to do:
   - Terrain
   - Terrain texturing based on normals
   - terrain bump maps
-  - Fun water shader
+  - Fun water shader:
+   - scrolling bump map
+   - real-time sine waves!!!
+   - reflects skybox

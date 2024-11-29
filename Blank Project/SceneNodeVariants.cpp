@@ -4,23 +4,19 @@
 
 void TestPlane::Draw(OGLRenderer& r) {
     if (mesh) {
+
+
         r.BindShader(shader);
         Matrix4 model = GetWorldTransform() * Matrix4::Scale(GetModelScale());
-        glUniformMatrix4fv(
-            glGetUniformLocation(GetShader()->GetProgram(), "modelMatrix"), 1, false, model.values
-        );
+        glUniformMatrix4fv(glGetUniformLocation(GetShader()->GetProgram(), "modelMatrix"), 1, false, model.values);
 
-        glUniform4fv(
-            glGetUniformLocation(GetShader()->GetProgram(), "nodeColour"), 1, (float*)&GetColour()
-        );
+        glUniform4fv(glGetUniformLocation(GetShader()->GetProgram(), "nodeColour"), 1, (float*)&GetColour());
 
         GLuint planeTexture = GetTexture();
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, planeTexture);
 
-        glUniform1i(
-            glGetUniformLocation(GetShader()->GetProgram(), "useTexture"), planeTexture
-        );
+        glUniform1i(glGetUniformLocation(GetShader()->GetProgram(), "useTexture"), planeTexture);
         mesh->Draw();
     }
 }
@@ -49,8 +45,8 @@ void HeightMapNode::Draw(OGLRenderer& r) {
     glActiveTexture(GL_TEXTURE3);
     glBindTexture(GL_TEXTURE_2D, grassBump);
 
-
-    render.modelMatrix = Matrix4::Translation(Vector3(0,0,0)) *
+    Vector3 heightmapSize = heightMap->GetHeightmapSize();
+    render.modelMatrix = Matrix4::Translation(Vector3(-heightmapSize.x/2.0f, 0.0f, -heightmapSize.z/2.0f)) *
         Matrix4::Scale(modelScale) *
         Matrix4::Rotation(0, Vector3(1, 0, 0));
     render.textureMatrix.ToIdentity(); // New!
@@ -69,7 +65,7 @@ void WaterNode::Draw(OGLRenderer& r) {
     glUniform1i(glGetUniformLocation(shader->GetProgram(), "cubeTex"), 2);
     glUniform1i(glGetUniformLocation(shader->GetProgram(), "bumpTex"), 3);
 
-    float col[4] = { 1.0f, 0.5f,0.3f,.5f};
+    float col[4] = { colour.x, colour.y, colour.x, colour.w};
     glUniform4fv(glGetUniformLocation(shader->GetProgram(), "waterColour"), 1, col);
 
     glUniform1f(glGetUniformLocation(shader->GetProgram(), "time"), r.GetTime());
@@ -86,7 +82,7 @@ void WaterNode::Draw(OGLRenderer& r) {
     glBindTexture(GL_TEXTURE_2D, bumpTex);
 
     r.modelMatrix =
-        Matrix4::Translation(hSize * 0.5f) *
+        Matrix4::Translation(Vector3(0,600.0f,0)) *
         Matrix4::Scale(hSize * 0.5f) *
         Matrix4::Rotation(90, Vector3(1, 0, 0));
 
@@ -98,4 +94,5 @@ void WaterNode::Draw(OGLRenderer& r) {
     r.UpdateShaderMatrices();
     // SetShaderLight(*light); // No lighting in this shader!
     mesh->Draw();
+    r.textureMatrix.ToIdentity();
 }
