@@ -31,16 +31,16 @@ Features to do:
 
 
  Features implemented:
-  - Real-time Shadow mapping
-  - Skybox
-  - Terrain
-  - Terrain texturing based on normals
-  - terrain bump maps
-  - Fun water shader:
-   - scrolling bump map
-   - real-time sine waves!!!
-   - reflects skybox
-  - fog!
-  - robot
-  - procedural terrain
+  x Real-time Shadow mapping
+  x Skybox
+  x Terrain
+  x Terrain texturing based on normals
+  x terrain bump maps
+  x Fun water shader:
+   x scrolling bump map
+   x real-time sine waves!!!
+   x reflects skybox
+  x fog!
+  x robot
+  x procedural terrain
 

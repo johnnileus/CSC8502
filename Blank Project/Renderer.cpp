@@ -144,7 +144,7 @@ Renderer::Renderer(Window& parent) : OGLRenderer(parent) {
     procMap->SetMainLight(mainLight);
     procMap->SetBoundingRadius(100000.0f);
     procMap->SetModelScale({ 1.0f,1.0f,1.0f });
-    procMap->SetTransform(Matrix4::Translation(Vector3(0, 0, 0)));
+    procMap->SetTransform(Matrix4::Translation(Vector3(0, -1, 0)));
     procMap->SetColour({ 0, 0, 0, 1 });
     procMap->SetShader(lightShader);
     procMap->drawable = true;
@@ -173,8 +173,9 @@ Renderer::Renderer(Window& parent) : OGLRenderer(parent) {
 
     root->AddChild(water);
     root->AddChild(map);
-    root->AddChild(procMap);
     root->AddChild(robot);
+
+    root->AddChild(procMap);
 
     for (int i = 0; i < 5; ++i) {
         SceneNode* s = new TestPlane();
@@ -263,7 +264,7 @@ Renderer::Renderer(Window& parent) : OGLRenderer(parent) {
     glEnable(GL_DEPTH_TEST);
 
     sceneTransforms.resize(4);
-    sceneTransforms[0] = Matrix4::Rotation(90, Vector3(1, 0, 0)) *
+    sceneTransforms[0] = Matrix4::Translation(Vector3(0.0f,.1f,0.0f)) * Matrix4::Rotation(90, Vector3(1, 0, 0)) *
         Matrix4::Scale(Vector3(10, 10, 1));
     sceneTime = 0.0f;
 

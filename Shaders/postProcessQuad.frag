@@ -19,7 +19,7 @@ float lineariseDepth(float depth) {
 
 vec4 applyFog(float depth, vec4 colour) {
     
-    float fogFactor = (1 / (1 + exp(-.005 * depth)));
+    float fogFactor = (1 / (1 + exp(-.001 * depth)));
 
     vec4 newCol = mix(colour, fogColour, fogFactor);
 

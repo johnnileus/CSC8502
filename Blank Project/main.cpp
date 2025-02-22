@@ -8,7 +8,7 @@
 float fpsDelay = 0.0f;
 
 int main() {
-	Window w("project", 1280, 720, false); //This is all boring win32 window creation stuff!
+	Window w("project", 1920, 1080, false); //This is all boring win32 window creation stuff!
 	if (!w.HasInitialised()) {
 		char a;
 		std::cin >> a;
